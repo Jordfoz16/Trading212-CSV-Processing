@@ -1,0 +1,5 @@
+Action,Time,ISIN,Ticker,Name,No. of shares,Price / share,Currency (Price / share),Exchange rate,Result (GBP),Total (GBP),Withholding tax,Currency (Withholding tax),Charge amount (GBP),Stamp duty reserve tax (GBP),Notes,ID,Currency conversion fee (GBP)
+Market buy,2021-07-02 14:02:22,US7134481081,PEP,"PepsiCo",1,149.64,USD,1.37772,4.65,115.33,,,,,,EOF1426511318,0.17
+Market buy,2021-07-02 14:02:22,US7134481081,PEP,"PepsiCo",1,149.64,USD,1.37772,4.65,115.33,,,,,,EOF1426511318,0.17
+Market sell,2021-07-02 14:02:22,US7134481081,PEP,"PepsiCo",1,149.64,USD,1.37772,4.65,115.33,,,,,,EOF1426511318,0.17
+Market buy,2021-07-02 14:02:22,US7134481081,PEP,"PepsiCo",1,149.64,USD,1.37772,4.65,115.33,,,,,,EOF1426511318,0.17

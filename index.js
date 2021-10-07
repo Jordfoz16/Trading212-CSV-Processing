@@ -3,18 +3,37 @@ const fs = require('fs');
 
 const file_path = "Data/Test.csv"
 
+class Portfolio{
+    constructor(order){
+        this.ISIN = order.ISIN;
+        this.Ticker = order.Ticker;
+        this.Name = order.Name;
+        this.Shares = order.Shares;
+        this.Price = order.Price;
+        this.Currency = order.Currency;
+    }
+    
+    buy(order){
+        this.Shares += order.Shares;
+    }
+
+    sell(order){
+        this.Shares -= order.Shares;
+    }
+}
+
 function Order(event){
     this.Action = event["Action"];
     this.Time = event["Time"];
     this.ISIN = event["ISIN"];
     this.Ticker = event["Ticker"];
     this.Name = event["Name"];
-    this.Shares = event["No. of shares"];
-    this.Price = event["Price / share"];
+    this.Shares = parseFloat(event["No. of shares"]);
+    this.Price = parseFloat(event["Price / share"]);
     this.Currency = event["Currency (Price / share)"];
-    this.FX = event["Exchange rate"];
-    this.Result = event["Result (GBP)"];
-    this.Total = event["Total (GBP)"];
+    this.FX = parseFloat(event["Exchange rate"]);
+    this.Result = parseFloat(event["Result (GBP)"]);
+    this.Total = parseFloat(event["Total (GBP)"]);
 }
 
 function Dividend(event){
@@ -23,22 +42,23 @@ function Dividend(event){
     this.ISIN = event["ISIN"];
     this.Ticker = event["Ticker"];
     this.Name = event["Name"];
-    this.Shares = event["No. of shares"];
-    this.Price = event["Price / share"];
+    this.Shares = parseFloat(event["No. of shares"]);
+    this.Price = parseFloat(event["Price / share"]);
     this.Currency = event["Currency (Price / share)"];
-    this.Total = event["Total (GBP)"];
-    this.WithholdingTax = event["Withholding tax"];
+    this.Total = parseFloat(event["Total (GBP)"]);
+    this.WithholdingTax = parseFloat(event["Withholding tax"]);
 }
 
 function Transaction(event){
     this.Action = event["Action"];
     this.Time = event["Time"];
-    this.Total = event["Total (GBP)"];
+    this.Total = parseFloat(event["Total (GBP)"]);
 }
 
 var orders = [];
 var dividends = [];
 var transactions = [];
+var portfolio = new Map();
 
 function processCSV(events){
 
@@ -60,6 +80,19 @@ function processCSV(events){
     }
 
     //TODO - Combine market buy/sell events to get a total amount of shares
+    for (let index = 0; index < orders.length; index++) {
+        const order = orders[index];
+        const ISIN = order.ISIN;
+        if(portfolio.has(ISIN)){
+            if(order.Action === "Market buy"){
+                portfolio.get(ISIN).buy(order)
+            }else if(order.Action === "Market sell"){
+                portfolio.get(ISIN).sell(order)
+            }
+        }else{
+            portfolio.set(ISIN, new Portfolio(order))
+        }
+    }
 
     console.log("Finished Processing");
 }
