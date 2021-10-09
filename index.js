@@ -1,6 +1,18 @@
 const csv = require('csv-parser');
+const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const fs = require('fs');
-const { resolve } = require('path');
+
+const csvWriter = createCsvWriter({
+    path: 'Output/Output.csv',
+    header: [
+        {id: 'ISIN', title: 'ISIN'},
+        {id: 'Ticker', title: 'Ticker'},
+        {id: 'Name', title: 'NAME'},
+        {id: 'Shares', title: 'Shares'},
+        {id: 'Price', title: 'Price'},
+        {id: 'Currency', title: 'Currency'}
+    ]
+});
 
 const folder_path = "Data/"
 
@@ -98,6 +110,12 @@ function buildPortfolio(){
         }
     }
 
+    portfolio.forEach((stock, key) => { 
+        if(stock.Shares <= 0.00000001){
+            portfolio.delete(key);
+        }
+     } )
+
     console.log("Finished Building Portfolio")
 }
 
@@ -132,26 +150,42 @@ function readCSV(path){
     })
 }
 
+function writeCSV(data){
+    var stocks = []
+
+    data.forEach((stock, key) => { 
+        stocks.push(stock)
+    } )
+
+    csvWriter.writeRecords(stocks).then(() => {
+        console.log('File created');
+    });
+ 
+}
+
 function app(){
 
     var file_list = listFiles(folder_path);
 
+    if(file_list <= 0) {
+        console.log("No Files")
+        process.exit()
+    }
+
     const dataPromises = []
     for (let i = 0; i < file_list.length; i++) {
         const file = file_list[i];
-        //launch reading
         dataPromises.push(readCSV(file))
     }
 
     Promise.all(dataPromises).then(result => {
-        //this code will be called in future after all readCSV Promises call resolve(..)
         for(const events of result){
-            console.log("######################################")
             processCSV(events);    
         }
         
         buildPortfolio()
-        console.log(portfolio.get('AAPL').Shares)
+
+        writeCSV(portfolio)
     })
 }
 
