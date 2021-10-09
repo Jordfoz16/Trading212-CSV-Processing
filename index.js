@@ -1,7 +1,8 @@
 const csv = require('csv-parser');
 const fs = require('fs');
+const { resolve } = require('path');
 
-const file_path = "Data/Test.csv"
+const folder_path = "Data/"
 
 class Portfolio{
     constructor(order){
@@ -78,41 +79,80 @@ function processCSV(events){
             transactions.push(new Transaction(event))
         }
     }
-
-    //TODO - Combine market buy/sell events to get a total amount of shares
-    for (let index = 0; index < orders.length; index++) {
-        const order = orders[index];
-        const ISIN = order.ISIN;
-        if(portfolio.has(ISIN)){
-            if(order.Action === "Market buy"){
-                portfolio.get(ISIN).buy(order)
-            }else if(order.Action === "Market sell"){
-                portfolio.get(ISIN).sell(order)
-            }
-        }else{
-            portfolio.set(ISIN, new Portfolio(order))
-        }
-    }
-
     console.log("Finished Processing");
 }
 
-async function readCSV(path){
-    return new Promise(function(resolve, reject) {
-        var events = []
+function buildPortfolio(){
+    for (let index = 0; index < orders.length; index++) {
+        const order = orders[index];
+        const Ticker = order.Ticker;
 
-        fs.createReadStream(path).pipe(csv()).on('data', (row) => {
+        if(portfolio.has(Ticker)){
+            if(order.Action === "Market buy"){
+                portfolio.get(Ticker).buy(order);
+            }else if(order.Action === "Market sell"){
+                portfolio.get(Ticker).sell(order)
+            }
+        }else{
+            portfolio.set(Ticker, new Portfolio(order))
+        }
+    }
+
+    console.log("Finished Building Portfolio")
+}
+
+function listFiles(path){
+    var csvFiles = []
+        
+        //Gets a list of all CSV Files
+        var files = fs.readdirSync(path);
+
+        files.forEach(file => {
+            if(file.endsWith("csv")){
+                csvFiles.push(folder_path + file)
+            }
+        });
+
+    return csvFiles;
+}
+
+function readCSV(path){
+    return new Promise((resolve) => {
+        var events = [];
+        fs.createReadStream(path)
+          .pipe(csv())
+          .on('data', (row) => {
+            // this code called in future
             events.push(row);
         }).on('end', () => {
+            // this code called in future to, 
             console.log('CSV file successfully processed. Length: ' + events.length);
-            resolve(events)
-        });
+            resolve(events); //return csv parsed result
+        }); 
     })
 }
 
-async function app(){
-    var events = await readCSV(file_path);
-    processCSV(events)
+function app(){
+
+    var file_list = listFiles(folder_path);
+
+    const dataPromises = []
+    for (let i = 0; i < file_list.length; i++) {
+        const file = file_list[i];
+        //launch reading
+        dataPromises.push(readCSV(file))
+    }
+
+    Promise.all(dataPromises).then(result => {
+        //this code will be called in future after all readCSV Promises call resolve(..)
+        for(const events of result){
+            console.log("######################################")
+            processCSV(events);    
+        }
+        
+        buildPortfolio()
+        console.log(portfolio.get('AAPL').Shares)
+    })
 }
 
 app();
