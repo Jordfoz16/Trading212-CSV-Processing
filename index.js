@@ -2,7 +2,7 @@ const csv = require('csv-parser');
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const fs = require('fs');
 
-const csvWriter = createCsvWriter({
+const csvWriterPortfolio = createCsvWriter({
     path: 'Output/Output.csv',
     header: [
         {id: 'ISIN', title: 'ISIN'},
@@ -32,6 +32,21 @@ class Portfolio{
 
     sell(order){
         this.Shares -= order.Shares;
+    }
+}
+
+class DividendHistory{
+    constructor(event){
+        // this.Action = event.Action;
+        // this.Time = event.Time;
+        // this.ISIN = event.ISIN;
+        // this.Ticker = event.Ticker;
+        // this.Name = event.Name;
+        // this.Shares = event.Shares;
+        // this.Price = event.Price;
+        // this.Currency = event.Currency;
+        // this.Total = event.Total;
+        // this.WithholdingTax = event.WithholdingTax;
     }
 }
 
@@ -71,7 +86,9 @@ function Transaction(event){
 var orders = [];
 var dividends = [];
 var transactions = [];
+
 var portfolio = new Map();
+var dividendHistory = new Map();
 
 function processCSV(events){
 
@@ -83,7 +100,7 @@ function processCSV(events){
             orders.push(new Order(event));
         }
 
-        if(event["Action"] === "Dividend (Ordinary)" || event["Action"] === "Dividend (Property income)"){
+        if(event["Action"] === "Dividend (Ordinary)" || event["Action"] === "Dividend (Property income)" || event["Action"] === "Dividend (Bonus)"){
             dividends.push(new Dividend(event))
         }
 
@@ -95,6 +112,7 @@ function processCSV(events){
 }
 
 function buildPortfolio(){
+    
     for (let index = 0; index < orders.length; index++) {
         const order = orders[index];
         const Ticker = order.Ticker;
@@ -117,6 +135,28 @@ function buildPortfolio(){
      } )
 
     console.log("Finished Building Portfolio")
+}
+
+function buildDividendList(){
+
+    for (let index = 0; index < dividends.length; index++) {
+        const dividend = dividends[index];
+        const Ticker = dividend.Ticker;
+
+        var date = new Date(dividend.Time);        
+        var keyDate = new Date(0)
+
+        keyDate.setFullYear(date.getFullYear())
+        keyDate.setMonth(date.getMonth())
+        keyDate = keyDate.toISOString()
+
+        if(dividendHistory.has(keyDate)){
+            const currentValue = dividendHistory.get(keyDate)
+            dividendHistory.set(keyDate, currentValue + dividend.Total)
+        }else{
+            dividendHistory.set(keyDate, dividend.Total)
+        }
+    }
 }
 
 function listFiles(path){
@@ -150,17 +190,53 @@ function readCSV(path){
     })
 }
 
-function writeCSV(data){
+function writeCSVPortfolio(data){
     var stocks = []
 
     data.forEach((stock, key) => { 
         stocks.push(stock)
     } )
 
-    csvWriter.writeRecords(stocks).then(() => {
+    csvWriterPortfolio.writeRecords(stocks).then(() => {
         console.log('File created');
     });
  
+}
+
+function writeCSVDividend(data){
+    const csvWriterDividends = createCsvWriter({
+        path: 'Output/DividendOutput.csv',
+        header: [
+            {id: 'year', title: 'Year'},
+            {id: '1', title: 'Jan'},
+            {id: '2', title: 'Feb'},
+            {id: '3', title: 'Mar'},
+            {id: '4', title: 'April'},
+            {id: '5', title: 'May'},
+            {id: '6', title: 'June'},
+            {id: '7', title: 'July'},
+            {id: '8', title: 'August'},
+            {id: '9', title: 'September'},
+            {id: '10', title: 'October'},
+            {id: '11', title: 'November'},
+            {id: '11', title: 'December'},
+        ]
+    })
+
+    function dividendDate(value, month, year){
+        this.value = value;
+        this.month = month;
+        this.year = year;
+    }
+
+    var test = new Array()
+
+    data.forEach((value, key) => {
+        const date = new Date(key)  
+        test.push(new dividendDate(value, date.getMonth(), date.getFullYear()))
+    })
+
+    console.log("test")
 }
 
 function app(){
@@ -184,8 +260,10 @@ function app(){
         }
         
         buildPortfolio()
+        buildDividendList()
 
-        writeCSV(portfolio)
+        writeCSVPortfolio(portfolio)
+        writeCSVDividend(dividendHistory)
     })
 }
 
