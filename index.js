@@ -2,7 +2,10 @@ const csv = require('csv-parser');
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const fs = require('fs');
 
-const folder_path = "Data/"
+const input_folder_path = "Data/"
+const output_folder_path = "Output/"
+
+const debug_log = false;
 
 class Portfolio{
     constructor(order){
@@ -81,7 +84,8 @@ function processCSV(events){
             transactions.push(new Transaction(event))
         }
     }
-    console.log("Finished Processing");
+
+    print("Finished Processing", "DEBUG");
 }
 
 function buildPortfolio(){
@@ -107,7 +111,7 @@ function buildPortfolio(){
         }
      } )
 
-    console.log("Finished Building Portfolio")
+     print("Finished Building Portfolio", "DEBUG")
 }
 
 function buildDividendList(){
@@ -140,7 +144,7 @@ function listFiles(path){
 
         files.forEach(file => {
             if(file.endsWith("csv")){
-                csvFiles.push(folder_path + file)
+                csvFiles.push(input_folder_path + file)
             }
         });
 
@@ -157,7 +161,7 @@ function readCSV(path){
             events.push(row);
         }).on('end', () => {
             // this code called in future to, 
-            console.log('CSV file successfully processed. Length: ' + events.length);
+            print('CSV file successfully processed. Length: ' + events.length, "DEBUG");
             resolve(events); //return csv parsed result
         }); 
     })
@@ -183,7 +187,7 @@ function writeCSVPortfolio(data){
     } )
 
     csvWriterPortfolio.writeRecords(stocks).then(() => {
-        console.log('Portfolio File created');
+        print('Portfolio File created', "DEBUG");
     });
  
 }
@@ -242,16 +246,32 @@ function writeCSVDividend(data){
     
 
     csvWriterDividends.writeRecords(arrayList).then(() => {
-        console.log('Dividend File created');
+        print('Dividend File created', "DEBUG");
     });
+}
+
+function print(msg, level){
+    if(level == "DEBUG" && debug_log == true){
+        console.log("DEBUG - " + msg)
+    }else if(level == "INFO"){
+        console.log("INFO - " + msg);
+    }
 }
 
 function app(){
 
-    var file_list = listFiles(folder_path);
+    if (!fs.existsSync(output_folder_path)){
+        fs.mkdirSync(output_folder_path);
+    }
+
+    if (!fs.existsSync(input_folder_path)){
+        fs.mkdirSync(input_folder_path);
+    }
+
+    var file_list = listFiles(input_folder_path);
 
     if(file_list <= 0) {
-        console.log("No Files")
+        print("No Files", "INFO")
         process.exit()
     }
 
