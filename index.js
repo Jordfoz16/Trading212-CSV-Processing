@@ -2,18 +2,6 @@ const csv = require('csv-parser');
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const fs = require('fs');
 
-const csvWriterPortfolio = createCsvWriter({
-    path: 'Output/Output.csv',
-    header: [
-        {id: 'ISIN', title: 'ISIN'},
-        {id: 'Ticker', title: 'Ticker'},
-        {id: 'Name', title: 'NAME'},
-        {id: 'Shares', title: 'Shares'},
-        {id: 'Price', title: 'Price'},
-        {id: 'Currency', title: 'Currency'}
-    ]
-});
-
 const folder_path = "Data/"
 
 class Portfolio{
@@ -32,21 +20,6 @@ class Portfolio{
 
     sell(order){
         this.Shares -= order.Shares;
-    }
-}
-
-class DividendHistory{
-    constructor(event){
-        // this.Action = event.Action;
-        // this.Time = event.Time;
-        // this.ISIN = event.ISIN;
-        // this.Ticker = event.Ticker;
-        // this.Name = event.Name;
-        // this.Shares = event.Shares;
-        // this.Price = event.Price;
-        // this.Currency = event.Currency;
-        // this.Total = event.Total;
-        // this.WithholdingTax = event.WithholdingTax;
     }
 }
 
@@ -141,7 +114,6 @@ function buildDividendList(){
 
     for (let index = 0; index < dividends.length; index++) {
         const dividend = dividends[index];
-        const Ticker = dividend.Ticker;
 
         var date = new Date(dividend.Time);        
         var keyDate = new Date(0)
@@ -152,7 +124,8 @@ function buildDividendList(){
 
         if(dividendHistory.has(keyDate)){
             const currentValue = dividendHistory.get(keyDate)
-            dividendHistory.set(keyDate, currentValue + dividend.Total)
+            let sum = currentValue + dividend.Total
+            dividendHistory.set(keyDate, +sum.toFixed(2))
         }else{
             dividendHistory.set(keyDate, dividend.Total)
         }
@@ -191,6 +164,18 @@ function readCSV(path){
 }
 
 function writeCSVPortfolio(data){
+    const csvWriterPortfolio = createCsvWriter({
+        path: 'Output/PortfolioOutput.csv',
+        header: [
+            {id: 'ISIN', title: 'ISIN'},
+            {id: 'Ticker', title: 'Ticker'},
+            {id: 'Name', title: 'NAME'},
+            {id: 'Shares', title: 'Shares'},
+            {id: 'Price', title: 'Price'},
+            {id: 'Currency', title: 'Currency'}
+        ]
+    });
+
     var stocks = []
 
     data.forEach((stock, key) => { 
@@ -198,7 +183,7 @@ function writeCSVPortfolio(data){
     } )
 
     csvWriterPortfolio.writeRecords(stocks).then(() => {
-        console.log('File created');
+        console.log('Portfolio File created');
     });
  
 }
@@ -208,9 +193,9 @@ function writeCSVDividend(data){
         path: 'Output/DividendOutput.csv',
         header: [
             {id: 'year', title: 'Year'},
-            {id: '1', title: 'Jan'},
-            {id: '2', title: 'Feb'},
-            {id: '3', title: 'Mar'},
+            {id: '1', title: 'January'},
+            {id: '2', title: 'Febuary'},
+            {id: '3', title: 'March'},
             {id: '4', title: 'April'},
             {id: '5', title: 'May'},
             {id: '6', title: 'June'},
@@ -219,24 +204,46 @@ function writeCSVDividend(data){
             {id: '9', title: 'September'},
             {id: '10', title: 'October'},
             {id: '11', title: 'November'},
-            {id: '11', title: 'December'},
+            {id: '12', title: 'December'},
         ]
     })
 
-    function dividendDate(value, month, year){
-        this.value = value;
-        this.month = month;
-        this.year = year;
-    }
-
-    var test = new Array()
+    var years = new Map()
 
     data.forEach((value, key) => {
-        const date = new Date(key)  
-        test.push(new dividendDate(value, date.getMonth(), date.getFullYear()))
-    })
+        const date = new Date(key)
+        if(!years.has(date.getFullYear())){
+            years.set(date.getFullYear(), new Array(13))
+            years.get(date.getFullYear())[date.getMonth()+1] = value
+        }else{
+            years.get(date.getFullYear())[date.getMonth()+1] = value
+        }
+    } )
 
-    console.log("test")
+    var arrayList = []
+
+    years.forEach((value, key) => {
+        var emptyObject = {}
+        
+        emptyObject.year = key;
+
+        for (let index = 1; index < value.length; index++) {
+            const month = value[index];
+            if(month == undefined){
+                emptyObject[index] = 0
+            }else{
+                emptyObject[index] = month;
+            }
+            
+        }
+
+        arrayList.push(emptyObject)
+    })
+    
+
+    csvWriterDividends.writeRecords(arrayList).then(() => {
+        console.log('Dividend File created');
+    });
 }
 
 function app(){
