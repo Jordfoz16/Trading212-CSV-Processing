@@ -1,3 +1,12 @@
+/*
+TODO List:
+    - Fix rounding issue with diviends
+    - Filter out duplicate events. In case there is an overlap in CSV data
+    - Seperate into multiple JS files e.g. FileManagement
+    - Output transaction history with summary of money in/out
+    - Clean code
+*/
+
 const csv = require('csv-parser');
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const fs = require('fs');
@@ -32,12 +41,12 @@ function Order(event){
     this.ISIN = event["ISIN"];
     this.Ticker = event["Ticker"];
     this.Name = event["Name"];
-    this.Shares = parseFloat(event["No. of shares"]);
-    this.Price = parseFloat(event["Price / share"]);
+    this.Shares = +parseFloat(event["No. of shares"]).toFixed(7);
+    this.Price = +parseFloat(event["Price / share"]).toFixed(7);
     this.Currency = event["Currency (Price / share)"];
-    this.FX = parseFloat(event["Exchange rate"]);
-    this.Result = parseFloat(event["Result (GBP)"]);
-    this.Total = parseFloat(event["Total (GBP)"]);
+    this.FX = +parseFloat(event["Exchange rate"]).toFixed(7)
+    this.Result = +parseFloat(event["Result (GBP)"]).toFixed(7);
+    this.Total = +parseFloat(event["Total (GBP)"]).toFixed(7);
 }
 
 function Dividend(event){
@@ -46,11 +55,11 @@ function Dividend(event){
     this.ISIN = event["ISIN"];
     this.Ticker = event["Ticker"];
     this.Name = event["Name"];
-    this.Shares = parseFloat(event["No. of shares"]);
-    this.Price = parseFloat(event["Price / share"]);
+    this.Shares = +parseFloat(event["No. of shares"]).toFixed(7);
+    this.Price = +parseFloat(event["Price / share"]).toFixed(7);
     this.Currency = event["Currency (Price / share)"];
-    this.Total = parseFloat(event["Total (GBP)"]);
-    this.WithholdingTax = parseFloat(event["Withholding tax"]);
+    this.Total = +parseFloat(event["Total (GBP)"]).toFixed(7);
+    this.WithholdingTax = +parseFloat(event["Withholding tax"]).toFixed(7);
 }
 
 function Transaction(event){
