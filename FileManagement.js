@@ -77,6 +77,48 @@ module.exports = {
         });
      
     },
+
+    writeYahooFinancePortfolio: function(data){
+        const csvWriterYahooPortfolio = createCsvWriter({
+            path: 'Output/YahooPortfolioOutput.csv',
+            header: [
+                {id: 'Ticker', title: 'Symbol'},
+                {id: 'no_value', title: 'Current'},
+                {id: 'no_value', title: 'Price'},
+                {id: 'no_value', title: 'Date'},
+                {id: 'no_value', title: 'Time'},
+                {id: 'no_value', title: 'Change'},
+                {id: 'no_value', title: 'Open'},
+                {id: 'no_value', title: 'High'},
+                {id: 'no_value', title: 'Low'},
+                {id: 'no_value', title: 'Volume'},
+                {id: 'no_value', title: 'Trade Date'},
+                {id: 'no_value', title: 'Purchase Price'},
+                {id: 'Shares', title: 'Quantity'},
+                {id: 'no_value', title: 'Commission'},
+                {id: 'no_value', title: 'High Limit'},
+                {id: 'no_value', title: 'Low Limit'},
+                {id: 'no_value', title: 'Comment'}
+            ]
+        });
+
+        var stocks = []
+    
+        data.forEach((stock, key) => { 
+            let ISIN_Country_Code = stock["ISIN"].substring(0, 2)
+
+            if(ISIN_Country_Code == "GB" || ISIN_Country_Code == "IE"){
+                stock["Ticker"] = stock["Ticker"] + ".L"
+            }
+
+            stock['no_value'] = " "
+            stocks.push(stock)
+        } )
+    
+        csvWriterYahooPortfolio.writeRecords(stocks).then(() => {
+            logging.log('Yahoo Portfolio File created', "DEBUG");
+        });
+    },
     
     writeCSVDividend: function(data){
         const csvWriterDividends = createCsvWriter({

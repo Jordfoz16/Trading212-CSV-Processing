@@ -118,6 +118,7 @@ function app(){
         buildDividendList()
 
         FileManagement.writeCSVPortfolio(portfolio)
+        FileManagement.writeYahooFinancePortfolio(portfolio)
         FileManagement.writeCSVDividend(dividendHistory)
     })
 }
