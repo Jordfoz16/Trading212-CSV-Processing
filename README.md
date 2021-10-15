@@ -7,9 +7,10 @@
   - Go to Trading212
   - Navigate to the History page
   - Download your transaction history (Trading212 is limited to downloading 1 year at a time)
-  - Put all the CSV's into the Data folder
-  - Run the program
-  - All outputs are created in the Output folder
+  - Git clone the project, then run npm install to download the dependencies
+  - Run the index.js file. This will create the Data/ and Output/ folders
+  - Put all the CSV's into the Data/ folder
+  - All outputs are created in the Output/ folder
 
 ## Example
 
@@ -29,3 +30,7 @@
 ## Future Plans
  - Add Yahoo Finance upload support
  - Add Simply Wall St upload support
+
+## Known Issues 
+ - Stock Splits: When a stock split has occured Trading212 doesnt reflect this in the history. So for stocks that have split the total shares maybe incorrect.
+ - Missing Orders: Trading212's history isn't complete in some cases as there was a bug where some orders didnt get reported. So some stocks may still be in the portfolio breakdown.
