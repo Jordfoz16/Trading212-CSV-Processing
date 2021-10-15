@@ -1,6 +1,6 @@
 module.exports = {
-    Portfolio: class{
-        constructor(order){
+    Portfolio: class {
+        constructor(order) {
             this.ISIN = order.ISIN;
             this.Ticker = order.Ticker;
             this.Name = order.Name;
@@ -8,17 +8,17 @@ module.exports = {
             this.Price = order.Price;
             this.Currency = order.Currency;
         }
-        
-        buy(order){
+
+        buy(order) {
             this.Shares += order.Shares;
         }
-    
-        sell(order){
+
+        sell(order) {
             this.Shares -= order.Shares;
         }
     },
 
-    Order: function(event){
+    Order: function (event) {
         this.Action = event["Action"];
         this.Time = event["Time"];
         this.ISIN = event["ISIN"];
@@ -32,8 +32,8 @@ module.exports = {
         this.Total = parseFloat(event["Total (GBP)"]);
         this.ID = event["ID"];
     },
-    
-    Dividend: function(event){
+
+    Dividend: function (event) {
         this.Action = event["Action"];
         this.Time = event["Time"];
         this.ISIN = event["ISIN"];
@@ -45,8 +45,8 @@ module.exports = {
         this.Total = parseFloat(event["Total (GBP)"]);
         this.WithholdingTax = parseFloat(event["Withholding tax"]);
     },
-    
-    Transaction: function(event){
+
+    Transaction: function (event) {
         this.Action = event["Action"];
         this.Time = event["Time"];
         this.Total = parseFloat(event["Total (GBP)"]);
