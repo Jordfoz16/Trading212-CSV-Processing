@@ -30,6 +30,7 @@ module.exports = {
         this.FX = parseFloat(event["Exchange rate"]);
         this.Result = parseFloat(event["Result (GBP)"]);
         this.Total = parseFloat(event["Total (GBP)"]);
+        this.ID = event["ID"];
     },
     
     Dividend: function(event){
@@ -49,5 +50,6 @@ module.exports = {
         this.Action = event["Action"];
         this.Time = event["Time"];
         this.Total = parseFloat(event["Total (GBP)"]);
+        this.id = event["ID"]
     }
 }

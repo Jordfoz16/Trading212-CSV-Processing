@@ -1,4 +1,4 @@
-const debug_log = false;
+const debug_log = true;
 
 module.exports = {
     log: function(msg, level){
