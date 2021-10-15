@@ -11,8 +11,6 @@ TODO List:
     - Clean code
 */
 
-const debug_log = false;
-
 let orders = new Map();
 let dividends = new Map();
 let transactions = new Map();
@@ -33,12 +31,11 @@ function processCSV(events){
         }
 
         if(event["Action"] === "Dividend (Ordinary)" || event["Action"] === "Dividend (Property income)" || event["Action"] === "Dividend (Bonus)"){
-            let uid = event["Ticker"] + ":" + event["Time"]
+            let uid = event["Action"] + ":" + event["Ticker"] + ":" + event["Time"] + ":" + event["No. of shares"]
 
             if(!dividends.has(uid)){
                 dividends.set(uid, new ds.Dividend(event))
             }
-            
         }
 
         if(event["Action"] === "Deposit" || event["Action"] === "Withdrawal"){
